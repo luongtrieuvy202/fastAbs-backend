@@ -1,0 +1,10 @@
+# python==3.7
+torch
+gensim==3.6.0
+tensorboardX
+pyvi
+flask
+pickle5
+cytoolz
+pyrouge
+flask_cors
