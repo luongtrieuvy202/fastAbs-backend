@@ -24,7 +24,7 @@ app = Flask(__name__)
 CORS(app)
 
 model_dir = 'rl_final'
-beam_size = 1
+beam_size = 5
 diverse = 1.0
 max_len = 30
 cuda = False
@@ -57,7 +57,6 @@ def decode():
     paragraph = data['text']
     sentences = paragraph.split('.')
     trimmed_list = [ViTokenizer.tokenize(sentence.strip()) for sentence in sentences if sentence.strip()]
-
 
     raw_article_sentences = [trimmed_list]
     i = 0
@@ -106,8 +105,11 @@ def decode():
                 result.append(' '.join(new_sentence))
             concatenated_paragraph = '.'.join(result)   
             concatenated_paragraph = concatenated_paragraph.split('.')  
-            concatenated_paragraph = [sentence.strip().capitalize() for sentence in concatenated_paragraph if sentence.strip()]
-            concatenated_paragraph = [remove_duplicate_subphrases(sentence) for sentence in concatenated_paragraph]
+            concatenated_paragraph = [sentence.strip() for sentence in concatenated_paragraph if sentence.strip()]
+            concatenated_paragraph = [remove_last_comma(sentence).strip() for sentence in concatenated_paragraph]
+            concatenated_paragraph = [remove_duplicate_subphrases(sentence).capitalize() for sentence in concatenated_paragraph]
+            concatenated_paragraph = filter_short_sentences(concatenated_paragraph)
+            #concatenated_paragraph = concatenated_paragraph[:2]
             concatenated_paragraph = '. '.join(concatenated_paragraph)
             summary = concatenated_paragraph + "."
             i += 1
@@ -119,21 +121,37 @@ _PRUNE = defaultdict(
     {1:5, 2:5, 3:5, 4:5, 5:5, 6:4, 7:3, 8:3}
 )
 
+def remove_last_comma(sentence):
+    # Check if the last character is a comma
+    if sentence.endswith(','):
+        # Remove the last character (comma)
+        sentence = sentence[:-1]
 
-def remove_duplicate_subphrases(sentence):
-    words = sentence.split()
-    unique_words = []
-    seen_subphrases = set()
+    return sentence
 
-    for word in words:
-        # Use a regular expression to check if the word is a repeated subphrase of three words or more
-        if len(word) >= 3 and re.match(r'\b(\w+)\b.*\b\1\b.*\b\1\b', word):
-            continue
+def filter_short_sentences(sentences):
+  return [sentence for sentence in sentences if len(sentence.split()) > 4]
 
-        unique_words.append(word)
-        seen_subphrases.add(word)
+def remove_duplicate_subphrases(input_text):
+    print(input_text)
+    regex = r'\b(\w+)(?:\W+\1\b)+'
+    pattern = re.compile(regex, re.IGNORECASE)
 
-    return ' '.join(unique_words)
+    # Find all matches in the input text
+    matches = pattern.finditer(input_text)
+
+    # Check for subsequences of input that match the compiled pattern
+    for match in matches:
+        #print(match)
+        input_text = re.sub(match.group(), match.group(1), input_text)
+
+    return input_text
+
+# def remove_duplicate_subphrases(sentence):
+#     pattern = r"\b(\w+)(?:\s+\1\b)+"
+#     clean =  re.sub(pattern, r"\1", sentence)
+#     print(clean)
+#     return clean
 
 def rerank(all_beams, ext_inds):
     beam_lists = (all_beams[i: i+n] for i, n in ext_inds if n > 0)
