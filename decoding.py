@@ -20,7 +20,7 @@ from data.data import CnnDmDataset
 
 
 try:
-    DATASET_DIR = '/Users/admin'
+    DATASET_DIR = '/Users/admin/Downloads'
 except KeyError:
     print('please use environment variable to specify data directories')
 

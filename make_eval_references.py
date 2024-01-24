@@ -9,7 +9,7 @@ from utils import count_data
 from decoding import make_html_safe
 
 try:
-    DATA_DIR = os.environ['DATA']
+    DATA_DIR = '/Users/admin/Downloads'
 except KeyError:
     print('please use environment variable to specify data directories')
 

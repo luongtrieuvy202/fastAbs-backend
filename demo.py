@@ -26,7 +26,7 @@ CORS(app)
 model_dir = 'rl_final'
 beam_size = 5
 diverse = 1.0
-max_len = 30
+max_len = 100
 cuda = False
 
 
@@ -189,5 +189,5 @@ def _compute_score(hyps):
 
 
 if __name__ == '__main__':
-  app.run(port=8080)
+  app.run(port=8094)
 

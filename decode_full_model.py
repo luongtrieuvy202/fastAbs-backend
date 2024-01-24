@@ -22,6 +22,10 @@ from decoding import Abstractor, RLExtractor, DecodeDataset, BeamAbstractor
 from decoding import make_html_safe
 
 
+def coll(batch):
+    articles = list(filter(bool, batch))
+    return articles
+
 def decode(save_path, model_dir, split, batch_size,
            beam_size, diverse, max_len, cuda):
     start = time()
@@ -43,9 +47,7 @@ def decode(save_path, model_dir, split, batch_size,
     extractor = RLExtractor(model_dir, cuda=cuda)
 
     # setup loader
-    def coll(batch):
-        articles = list(filter(bool, batch))
-        return articles
+
     dataset = DecodeDataset(split)
 
     n_data = len(dataset)
@@ -149,7 +151,7 @@ if __name__ == '__main__':
     data.add_argument('--test', action='store_true', help='use test set')
 
     # decode options
-    parser.add_argument('--batch', type=int, action='store', default=32,
+    parser.add_argument('--batch', type=int, action='store', default=512,
                         help='batch size of faster decoding')
     parser.add_argument('--beam', type=int, action='store', default=1,
                         help='beam size for beam-search (reranking included)')
